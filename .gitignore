@@ -1,0 +1,5 @@
+/gpg-exec
+src/gpg-protocol.c
+*.o
+*.pyc
+__pycache__/
