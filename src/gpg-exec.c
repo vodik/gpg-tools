@@ -49,7 +49,7 @@ static inline int safe_execv(const char *path, const char *exe_path, char *const
 
 #define WHITESPACE " \t\n\r"
 
-static char *strstrip(char *s)
+static _nonnull_(1) char *strstrip(char *s)
 {
     char *e;
     s += strspn(s, WHITESPACE);
@@ -101,7 +101,7 @@ static char *extract_binary(char *path)
 
 error:
     memblock != MAP_FAILED ? munmap(memblock, st.st_size) : 0;
-    return strstrip(command);
+    return command ? strstrip(command) : NULL;
 }
 
 static _noreturn_ void exec_from_path(const char *cmd, const char *exe_path, char *argv[])

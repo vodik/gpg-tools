@@ -27,6 +27,7 @@
 #define _noreturn_       __attribute__((noreturn))
 #define _printf_(a,b)    __attribute__((format (printf, a, b)))
 #define _sentinel_       __attribute__((sentinel))
+#define _nonnull_(x)     __attribute__((nonnull(x)))
 #define _cleanup_(x)     __attribute__((cleanup(x)))
 #define _cleanup_free_   _cleanup_(freep)
 #define _cleanup_close_  _cleanup_(closep)
