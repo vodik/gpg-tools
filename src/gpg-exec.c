@@ -33,7 +33,9 @@
 
 static void source_agent_env(void)
 {
-    _cleanup_gpg_ struct gpg_t *agent = gpg_agent_connection(NULL, NULL);
+    _cleanup_gpg_ struct gpg_t *agent = gpg_agent_connection(NULL);
+    if (!agent)
+        err(EXIT_FAILURE, "failed to connect to gpg-agent");
     gpg_update_tty(agent);
 }
 
