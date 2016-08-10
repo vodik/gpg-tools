@@ -107,13 +107,31 @@ static _printf_(2, 3) int gpg_send_message(struct gpg_t *gpg, const char *fmt, .
     return rc == 0 ? nbytes_r : rc;
 }
 
-struct gpg_t *gpg_agent_connection(const char *sock, const char *home)
+static ssize_t find_gpg_socket(char *path, size_t buflen)
+{
+    ssize_t len;
+    const char *xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
+
+    if (xdg_runtime_dir) {
+        len = snprintf(path, buflen, "%s/gnupg/S.gpg-agent", xdg_runtime_dir);
+        if (access(path, F_OK) != -1)
+            return len;
+    }
+
+    len = snprintf(path, buflen, "%s/.gnupg/S.gpg-agent", get_home_dir());
+    if (access(path, F_OK) != -1)
+        return len;
+
+    return -1;
+}
+
+struct gpg_t *gpg_agent_connection(const char *sock)
 {
     union {
         struct sockaddr sa;
         struct sockaddr_un un;
     } sa;
-    size_t len;
+    ssize_t len;
     socklen_t sa_len;
 
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -123,9 +141,9 @@ struct gpg_t *gpg_agent_connection(const char *sock, const char *home)
     sa.un = (struct sockaddr_un){ .sun_family = AF_UNIX };
 
     if (!sock || !sock[0]) {
-        len = snprintf(sa.un.sun_path, sizeof(sa.un.sun_path),
-                       "%s/.gnupg/S.gpg-agent",
-                       home ? home : get_home_dir());
+        len = find_gpg_socket(sa.un.sun_path, sizeof(sa.un.sun_path));
+        if (len == -1)
+            return NULL;
     } else {
         len = strcspn(sock, ":");
         memcpy(&sa.un.sun_path, sock, len);
